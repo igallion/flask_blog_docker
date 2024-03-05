@@ -1,0 +1,52 @@
+version: '3'
+services:
+  vault:
+    image: hashicorp/vault:1.15
+    #container_name: vault_server
+    ports:
+      - "8200:8200/tcp"
+    volumes:
+      - ./vaultConfig:/vault/config  # Bind mount for configuration
+      - data_volume:/vault/file  # Named volume for Vault data
+    environment:
+      VAULT_LOCAL_CONFIG: /vault/config/vault-config.json
+      VAULT_ADDR: http://0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    entrypoint: "vault server -config=/vault/config/vault-config.json"
+    restart: unless-stopped
+  flask_blog:
+    image: flask_blog:1.7
+    depends_on:
+      - vault
+    ports: 
+      - 80:80
+    secrets:
+      - VAULT_TOKEN
+    environment:
+    - VAULT_ADDR=http://vault:8200
+    - MONGO_DB_HOST=mongodb
+    - MONGO_DB_PORT-27017
+  mongodb:
+    image: flask_mongo:1.0
+    depends_on:
+      - vault
+    ports:
+      - 27017:27017
+    secrets:
+      - mongo_root_username
+      - mongo_root_password
+    volumes:
+      - flask-mongo-data:/data/db
+volumes:
+  flask-mongo-data:
+    driver: local
+  data_volume:
+
+secrets:
+  VAULT_TOKEN:
+    file: ./.secrets/vault_token.txt
+  mongo_root_username:
+    file: ./.secrets/mongo_root_username.txt
+  mongo_root_password:
+    file: ./.secrets/mongo_root_password.txt

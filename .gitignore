@@ -1,0 +1,4 @@
+.secrets
+compose/.secrets
+test
+.DS_Store
