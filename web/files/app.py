@@ -9,7 +9,10 @@ from werkzeug.exceptions import abort
 
 def connect_vault():
     vault_addr = os.getenv('VAULT_ADDR')
-    vault_token = get_secret('VAULT_TOKEN')
+    if 'VAULT_TOKEN' in os.environ:
+        vault_token = os.getenv('VAULT_TOKEN')
+    else:
+        vault_token = get_secret('VAULT_TOKEN')
 
     # Create a client
     vault_client = hvac.Client(
