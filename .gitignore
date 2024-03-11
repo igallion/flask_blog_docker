@@ -2,3 +2,4 @@
 compose/.secrets
 test
 .DS_Store
+kubernetes/.secrets
